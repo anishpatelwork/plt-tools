@@ -19,15 +19,14 @@ jobs:
 
     steps:
       - checkout # checkout source code to working directory
-
       - run:
-        command: sudo pip install pipenv
+          command: |
+            sudo pip install pipenv
+            pipenv install
       
       - run: 
-        command: pipenv install
-
-      - run: 
-        command: pipenv run pytest
+          command: |
+            pipenv run pytest
 
       - store_test_results:
-        path: test-results
+          path: test-results
