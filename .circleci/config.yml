@@ -19,13 +19,23 @@ jobs:
 
     steps:
       - checkout # checkout source code to working directory
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - run:
+          name: Install Dependencies
           command: |
             sudo pip install pipenv
             pipenv install
+
+      - save_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.8/site-packages"
       
       - run: 
-          name: run tests
+          name: Run Tests
           command: |
             pipenv run pytest --junitxml=test-results/junit.xml
 
