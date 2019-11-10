@@ -35,6 +35,7 @@ jobs:
             - ".venv"
             - "/usr/local/bin"
             - "/usr/local/lib/python3.8/site-packages"
+            - "~/.local/share/virtualenvs"
       
       - run: 
           name: Run Tests
