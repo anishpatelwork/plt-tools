@@ -5,9 +5,6 @@ import pandas as pd
 def test_calculate_plt():
     aal = plt_calculator.CalculateAAL(test_plt, 5)
     assert aal == pytest.approx(900, rel=1)
-
-def test_calculate_oep():
-    oep_curve = plt_calculator.CalculateOEP(test_plt, 5)
     
 
 data = [
