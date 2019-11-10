@@ -1,11 +1,15 @@
-from plttools import plt_calculator
+from plttools import plt_calculator, ep_curve
 import pytest
 import pandas as pd
 
 def test_calculate_plt():
-    aal = plt_calculator.CalculateAAL(test_plt, 5)
-    assert aal == pytest.approx(900, rel=1)
+  aal = plt_calculator.calculate_AAL(test_plt, 5)
+  assert aal == pytest.approx(900, rel=1)
     
+def test_calculate_oep_curve():
+  oep = plt_calculator.calculate_OEP_curve(test_plt, 5)
+  assert type(oep) is ep_curve.EPCurve
+  assert oep.loss_at_a_given_return_period(5) == 900
 
 data = [
   {
