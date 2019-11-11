@@ -40,7 +40,13 @@ jobs:
       - run: 
           name: Run Tests
           command: |
-            pipenv run pytest --junitxml=test-results/junit.xml
+            # pipenv run pytest --junitxml=test-results/junit.xml
+            coverage run -m pytest
+            coverage report
+            coverage html  # open htmlcov/index.html in a browser
 
-      - store_test_results:
-          path: test-results
+      - store_artifacts:
+          path: htmlcov
+
+      # - store_test_results:
+      #     path: test-results
