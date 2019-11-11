@@ -42,6 +42,7 @@ jobs:
           command: |
             sudo mkdir test-reports
             sudo chown -R circleci:circleci test-reports
+            pipenv run pytest --junitxml=test-reports/junit.xml
             pipenv run coverage run -m pytest
             pipenv run coverage report
             pipenv run coverage xml -o test-reports/coverage.xml
@@ -51,4 +52,4 @@ jobs:
           path: test-reports
 
       - store_test_results:
-          path: test-results
+          path: test-reports
