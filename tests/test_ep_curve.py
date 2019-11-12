@@ -2,13 +2,18 @@ import pytest
 from plttools import ep_curve
 
 def test_loss_at_a_given_return_period():
-    oep_curve = ep_curve.EPCurve(data)
+    oep_curve = ep_curve.EPCurve(data, ep_type=ep_curve.EPType.OEP)
     loss_10_year = oep_curve.loss_at_a_given_return_period(10)
     loss_100_year = oep_curve.loss_at_a_given_return_period(100)
     loss_1000_year = oep_curve.loss_at_a_given_return_period(1000)
+    assert oep_curve.get_ep_type() == ep_curve.EPType.OEP
     assert loss_10_year == 9000
     assert loss_100_year == 9900
     assert loss_1000_year == 9990
+
+def test_ep_curve_no_type_is_unknown():
+  ep = ep_curve.EPCurve(data)
+  assert ep.get_ep_type() == ep_curve.EPType.UNKNOWN
 
 data = [
   {
