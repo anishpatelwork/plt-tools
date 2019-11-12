@@ -10,6 +10,21 @@ def test_calculate_oep_curve():
   oep = plt_calculator.calculate_OEP_curve(test_plt, 5)
   assert type(oep) is ep_curve.EPCurve
   assert oep.loss_at_a_given_return_period(5) == 900
+  assert oep.loss_at_a_given_return_period(2.5) == 800
+  assert oep.loss_at_a_given_return_period(5/3) == 300
+  assert oep.loss_at_a_given_return_period(1.25) == 100
+  assert oep.loss_at_a_given_return_period(1) == 0
+  
+
+def test_calculate_aep_curve():
+  aep = plt_calculator.calculate_AEP_curve(test_plt, 5)
+  assert type(aep) is ep_curve.EPCurve
+  assert aep.loss_at_a_given_return_period(5) == 3000
+  assert aep.loss_at_a_given_return_period(2.5) == 900
+  assert aep.loss_at_a_given_return_period(5/3) == 500
+  assert aep.loss_at_a_given_return_period(1.25) == 100
+  assert aep.loss_at_a_given_return_period(1) == 0
+
 
 data = [
   {
