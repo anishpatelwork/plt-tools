@@ -5,6 +5,7 @@ class EPCurve:
 
     def __init__(self, data, ep_type=None):
         self.curve = pd.DataFrame(data)
+        self.curve = self.curve.set_index('Probability')
         if ep_type is None:
             self.ep_type = EPType.UNKNOWN
         else:
@@ -12,7 +13,12 @@ class EPCurve:
 
     def loss_at_a_given_return_period(self, return_period):
         probability = 1 / return_period
-        loss = self.curve[self.curve.Probability == probability].Loss.iloc[0]
+        if probability in self.curve.index:
+            loss = self.curve.loc[probability].Loss
+        else:
+            prob_array = [probability]
+            self.curve = self.curve.reindex(self.curve.index.union(prob_array)).sort_index(ascending=True).interpolate(method='index')
+            loss = self.curve.loc[probability].Loss
         return loss
 
     def get_ep_type(self):

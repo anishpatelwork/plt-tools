@@ -6,10 +6,12 @@ def test_loss_at_a_given_return_period():
     loss_10_year = oep_curve.loss_at_a_given_return_period(10)
     loss_100_year = oep_curve.loss_at_a_given_return_period(100)
     loss_1000_year = oep_curve.loss_at_a_given_return_period(1000)
+    loss_800_year = oep_curve.loss_at_a_given_return_period(800)
     assert oep_curve.get_ep_type() == ep_curve.EPType.OEP
     assert loss_10_year == 9000
     assert loss_100_year == 9900
     assert loss_1000_year == 9990
+    assert loss_800_year == 9987.5
 
 def test_ep_curve_no_type_is_unknown():
   ep = ep_curve.EPCurve(data)
