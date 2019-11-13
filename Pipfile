@@ -10,7 +10,6 @@ rope = "*"
 pandas = "*"
 pytest = "*"
 coverage = "*"
-scipy = "*"
 
 [requires]
 python_version = "3.8"
