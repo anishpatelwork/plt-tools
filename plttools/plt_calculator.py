@@ -19,6 +19,10 @@ def calculate_AEP_curve(plt, number_of_simulations):
     max_period_losses = _calculate_probabilities_for_period_losses(max_period_losses)
     return ep_curve.EPCurve(max_period_losses.rename(columns={'loss': 'Loss'}), ep_type=ep_curve.EPType.AEP)
 
+def group_plts(plt1, plt2):
+    grouped_plt = pd.concat([plt1, plt2],axis=0)
+    return grouped_plt.groupby(['periodId', 'eventId', 'eventDate', 'lossDate', 'peril'], observed=True).sum().reset_index()
+
 def _calculate_probabilities_for_period_losses(period_losses):
     period_losses['row'] = np.arange(len(period_losses))
     period_losses['inv_row'] = len(period_losses) - period_losses['row']

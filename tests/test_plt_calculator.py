@@ -27,6 +27,26 @@ def test_calculate_aep_curve():
   assert aep.loss_at_a_given_return_period(1.25) == 100
   assert aep.loss_at_a_given_return_period(1) == 0
 
+def test_group_plts():
+  d1 = {
+    "periodId":[1,1,2,3,4,5,6], 
+    "eventId":[123,678,124,125,126,127,128], 
+    "eventDate":[10/19/2018,10/20/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018],
+    "loss":[100,102,90,110,120,80,100],
+    "lossDate":[10/19/2018,10/20/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018],
+    "peril":["EQ","EQ","EQ","EQ","EQ","EQ","EQ"]
+  }
+  d2 = {
+      "periodId":[1,1,2,3,4,5,6], 
+      "eventId":[123,678,124,125,126,127,128], 
+      "eventDate":[10/19/2018,10/20/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018],
+      "loss":[100,102,90,110,120,80,100],
+      "lossDate":[10/19/2018,10/20/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018,10/19/2018],
+      "peril":["EQ","EQ","EQ","EQ","EQ","EQ","EQ"]
+  }
+  grouped_plt = plt_calculator.group_plts(pd.DataFrame(d1), pd.DataFrame(d2))
+  assert grouped_plt.loc[grouped_plt['periodId']==1].loss.sum() == 404
+
 
 data = [
   {
