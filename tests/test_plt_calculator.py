@@ -1,15 +1,8 @@
 """ PLT Calculator tests"""
 # pylint: disable=line-too-long
 
-import pytest
 import pandas as pd
 from plttools import plt_calculator, ep_curve
-
-
-def test_calculate_plt():
-    """ Test Calculate test PLT"""
-    aal = plt_calculator.calculate_aal(TEST_PLT, 5)
-    assert aal == pytest.approx(900, rel=1)
 
 
 def test_calculate_oep_curve():
