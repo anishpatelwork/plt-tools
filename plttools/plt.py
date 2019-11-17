@@ -34,3 +34,18 @@ class PLT:
                                  ].groupby('periodId').sum()
         total_annual_losses = annual_losses[['loss']].sum()
         return total_annual_losses.loss / self.simulations
+
+    def get_standard_deviation(self):
+        """ Retrieves the Standard Deviation for the losses of the annual losses for the PLT
+            Parameters
+            ----------
+
+            Returns
+            -------
+            float :
+                The standard deviation of the annual losses for the PLT
+        """
+        annual_losses = self.plt[['periodId', 'loss']
+                                 ].groupby('periodId').sum()
+        stddev = annual_losses.loss.std()
+        return stddev
