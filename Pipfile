@@ -5,11 +5,14 @@ verify_ssl = true
 
 [dev-packages]
 rope = "*"
+autopep8 = "*"
 
 [packages]
 pandas = "*"
 pytest = "*"
 coverage = "*"
+pylint = "*"
+pep8 = "*"
 
 [requires]
 python_version = "3.8"
