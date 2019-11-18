@@ -18,6 +18,7 @@ class PLT:
     def __init__(self, df, number_of_simulations):
         self.plt = df
         self.simulations = number_of_simulations
+        self.cache = dict()
 
     def get_aal(self):
         """ Retrieves the AAL for the PLT
@@ -29,11 +30,14 @@ class PLT:
             float :
                 The average annual loss = total annual losses / number of simulations
         """
-
+        if 'aal' in self.cache:
+            return self.cache['aal']
         annual_losses = self.plt[['periodId', 'loss']
                                  ].groupby('periodId').sum()
         total_annual_losses = annual_losses[['loss']].sum()
-        return total_annual_losses.loss / self.simulations
+        aal = total_annual_losses.loss / self.simulations
+        self.cache['aal'] = aal
+        return aal
 
     def get_standard_deviation(self):
         """ Retrieves the Standard Deviation for the losses of the annual losses for the PLT
@@ -45,7 +49,10 @@ class PLT:
             float :
                 The standard deviation of the annual losses for the PLT
         """
+        if 'stddev' in self.cache:
+            return self.cache['stddev']
         annual_losses = self.plt[['periodId', 'loss']
                                  ].groupby('periodId').sum()
         stddev = annual_losses.loss.std()
+        self.cache['stddev'] = stddev
         return stddev
