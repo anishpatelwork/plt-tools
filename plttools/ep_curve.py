@@ -1,6 +1,7 @@
 """ EP Curve module for the representation of an EP Curve"""
 from enum import Enum
 import pandas as pd
+import plttools.ep_settings as ep_settings
 
 
 class EPCurve:
@@ -32,6 +33,14 @@ class EPCurve:
     def get_ep_type(self):
         """ Get the type of EP Curve """
         return self.ep_type
+
+    def get_standard_return_period_ep(self):
+        """ Calculates standard EP return periods and returns the overall curve """
+        return_periods = ep_settings.RETURN_PERIODS
+        probabilities = list(map(lambda x: 1/x, return_periods))
+        self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
+            ascending=True).interpolate(method='index')
+        return self.curve.to_dict()['Loss']
 
 
 class EPType(Enum):

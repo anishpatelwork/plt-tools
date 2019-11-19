@@ -1,6 +1,7 @@
 """ EP Curve tests"""
 # pylint: disable=too-many-lines
-from plttools import ep_curve
+import pandas as pd
+from plttools import ep_curve, ep_settings
 
 def test_loss_at_a_given_return_period():
     """ Test losses at given return periods """
@@ -20,6 +21,20 @@ def test_ep_curve_no_type_is_unknown():
     unknown_ep_curve = ep_curve.EPCurve(DATA)
     assert unknown_ep_curve.get_ep_type() == ep_curve.EPType.UNKNOWN
 
+
+def test_get_standard_return_period_ep():
+    """ Test get standard return period EP curve """
+    oep_curve = ep_curve.EPCurve(DATA, ep_type=ep_curve.EPType.OEP)
+    return_periods = ep_settings.RETURN_PERIODS
+    standard_curve = oep_curve.get_standard_return_period_ep()
+    test_ep_data = pd.DataFrame(DATA)
+    for return_period in return_periods:
+        prob = 1 / return_period
+        assert prob in standard_curve
+        # Sometimes not all probabilities exist in the sample input data
+        if len(test_ep_data.loc[test_ep_data['Probability'] == prob]) > 0:
+            assert standard_curve[prob] == test_ep_data.loc[
+                test_ep_data['Probability'] == prob, 'Loss'].values[0]
 
 DATA = [
     {
