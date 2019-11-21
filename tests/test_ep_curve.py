@@ -18,6 +18,14 @@ def test_loss_at_a_given_return_period():
     assert loss_1000000_year == 9990
     assert loss_800_year == 9987.5
 
+def test_tce_oep_at_a_given_return_period():
+    """Test TCE loss at given return periods """
+    oep_curve = ep_curve.EPCurve(DATA, ep_type=ep_curve.EPType.OEP)
+    loss_100_year = oep_curve.loss_at_a_given_return_period(100)
+    tce_loss_100_year = oep_curve.tce_loss_at_a_given_return_period(100)
+    assert loss_100_year == 9900
+    assert tce_loss_100_year == 9949.65
+
 def test_ep_curve_no_type_is_unknown():
     """ Test EP Curve is unknown when no type provided to init """
     unknown_ep_curve = ep_curve.EPCurve(DATA)
