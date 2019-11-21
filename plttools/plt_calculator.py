@@ -47,12 +47,12 @@ def calculate_aep_curve(plt, number_of_simulations):
 
     """
     complete_plt = _fill_plt_empty_periods(plt, number_of_simulations)
-    max_period_losses = complete_plt.groupby(
+    sum_period_losses = complete_plt.groupby(
         'periodId').sum().fillna(0).sort_values(by=['loss'])
-    max_period_losses = _calculate_probabilities_for_period_losses(
-        max_period_losses)
-    max_period_losses = max_period_losses.rename(columns={'loss': 'Loss'})
-    return ep_curve.EPCurve(max_period_losses, ep_type=ep_curve.EPType.AEP)
+    sum_period_losses = _calculate_probabilities_for_period_losses(
+        sum_period_losses)
+    sum_period_losses = sum_period_losses.rename(columns={'loss': 'Loss'})
+    return ep_curve.EPCurve(sum_period_losses, ep_type=ep_curve.EPType.AEP)
 
 
 def group_plts(plt1, plt2):
@@ -72,8 +72,7 @@ def group_plts(plt1, plt2):
     return grouped_plt.groupby(['periodId',
                                 'eventId',
                                 'eventDate',
-                                'lossDate',
-                                'peril'], observed=True).sum().reset_index()
+                                'lossDate'], observed=True).sum().reset_index()
 
 
 def _calculate_probabilities_for_period_losses(period_losses):

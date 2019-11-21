@@ -36,20 +36,35 @@ def test_group_plts():
         "eventId": [123, 678, 124, 125, 126, 127, 128],
         "eventDate": [10/19/2018, 10/20/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018],
         "loss": [100, 102, 90, 110, 120, 80, 100],
-        "lossDate": [10/19/2018, 10/20/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018],
-        "peril": ["EQ", "EQ", "EQ", "EQ", "EQ", "EQ", "EQ"]
+        "lossDate": [10/19/2018, 10/20/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018]
     }
     d_2 = {
         "periodId": [1, 1, 2, 3, 4, 5, 6],
         "eventId": [123, 678, 124, 125, 126, 127, 128],
         "eventDate": [10/19/2018, 10/20/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018],
         "loss": [100, 102, 90, 110, 120, 80, 100],
-        "lossDate": [10/19/2018, 10/20/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018],
-        "peril": ["EQ", "EQ", "EQ", "EQ", "EQ", "EQ", "EQ"]
+        "lossDate": [10/19/2018, 10/20/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018, 10/19/2018]
     }
     grouped_plt = plt_calculator.group_plts(
         pd.DataFrame(d_1), pd.DataFrame(d_2))
     assert grouped_plt.loc[grouped_plt['periodId'] == 1].loss.sum() == 404
+
+
+# def test_marginal_impact():
+#     original_oep = plt_calculator.calculate_oep_curve(TEST_PLT, 5)
+#     grouped_plt = plt_calculator.group_plts(
+#         TEST_PLT, TEST_PLT
+#     )
+#     grouped_oep = plt_calculator.calculate_oep_curve(grouped_plt, 6)
+#     assert original_oep.loss_at_a_given_return_period(2.5) == 800
+#     assert grouped_oep.loss_at_a_given_return_period(2.5)
+
+#     grouped_ep_curve = grouped_oep.get_standard_return_period_ep()
+#     original_ep_curve = original_oep.get_standard_return_period_ep()
+#     marginal_oep = {key: original_ep_curve[key] - grouped_ep_curve.get(key, 0)
+#                     for key in original_ep_curve.keys()}
+#     # This assertion is not a valid one
+#     assert marginal_oep.loss_at_a_given_return_period(100) == 100
 
 
 DATA = [

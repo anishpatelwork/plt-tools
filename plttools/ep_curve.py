@@ -1,6 +1,7 @@
 """ EP Curve module for the representation of an EP Curve"""
 from enum import Enum
 import pandas as pd
+import numpy as np
 import plttools.ep_settings as ep_settings
 
 
@@ -11,7 +12,11 @@ class EPCurve:
         """ Type initialiser for EP Curve """
 
         self.curve = pd.DataFrame(data)
+        max_loss_prob = [{"Probability": np.finfo(
+            float).tiny, "Loss": self.curve.max().Loss}]
+        self.curve = self.curve.append(pd.DataFrame(max_loss_prob))
         self.curve = self.curve.set_index('Probability')
+
         if ep_type is None:
             self.ep_type = EPType.UNKNOWN
         else:
@@ -47,4 +52,6 @@ class EPType(Enum):
     """ EP Type Enum representing type of EP Curve """
     OEP = 1
     AEP = 2
-    UNKNOWN = 3
+    TCE_OEP = 3
+    TCE_AEP = 4
+    UNKNOWN = 5
