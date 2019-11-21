@@ -35,6 +35,14 @@ class EPCurve:
             loss = self.curve.loc[probability].Loss
         return loss
 
+    def tce_loss_at_a_given_return_period(self, return_period):
+        """ Calculate TCE from EP curve at a given return period """
+        return_period_loss = self.loss_at_a_given_return_period(return_period)
+        probability = 1 / return_period
+        subset = self.curve[self.curve.index <= probability]
+        expected_loss_above_rpl = (subset.index * subset['Loss']).mean()
+        return return_period_loss + expected_loss_above_rpl
+
     def get_ep_type(self):
         """ Get the type of EP Curve """
         return self.ep_type
@@ -52,6 +60,4 @@ class EPType(Enum):
     """ EP Type Enum representing type of EP Curve """
     OEP = 1
     AEP = 2
-    TCE_OEP = 3
-    TCE_AEP = 4
-    UNKNOWN = 5
+    UNKNOWN = 3
