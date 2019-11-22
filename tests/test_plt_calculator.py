@@ -2,14 +2,14 @@
 # pylint: disable=line-too-long
 
 import pandas as pd
-from plttools import plt_calculator, ep_curve
+from plttools import plt_calculator, EPCurve, EPType
 
 
 def test_calculate_oep_curve():
     """ Test Calculate OEP Curve"""
     oep = plt_calculator.calculate_oep_curve(TEST_PLT, 5)
-    assert isinstance(oep, ep_curve.EPCurve)
-    assert oep.get_ep_type() == ep_curve.EPType.OEP
+    assert isinstance(oep, EPCurve)
+    assert oep.get_ep_type() == EPType.OEP
     assert oep.loss_at_a_given_return_period(5) == 900
     assert oep.loss_at_a_given_return_period(2.5) == 800
     assert oep.loss_at_a_given_return_period(5/3) == 300
@@ -20,8 +20,8 @@ def test_calculate_oep_curve():
 def test_calculate_aep_curve():
     """ Test Calculate AEP curve"""
     aep = plt_calculator.calculate_aep_curve(TEST_PLT, 5)
-    assert isinstance(aep, ep_curve.EPCurve)
-    assert aep.get_ep_type() == ep_curve.EPType.AEP
+    assert isinstance(aep, EPCurve)
+    assert aep.get_ep_type() == EPType.AEP
     assert aep.loss_at_a_given_return_period(5) == 3000
     assert aep.loss_at_a_given_return_period(2.5) == 900
     assert aep.loss_at_a_given_return_period(5/3) == 500

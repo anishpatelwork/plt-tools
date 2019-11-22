@@ -1,17 +1,18 @@
 """ EP Curve tests"""
 # pylint: disable=too-many-lines
 import pandas as pd
-from plttools import ep_curve, ep_settings
+import pytest
+from plttools import EPCurve, EPType
 
 def test_loss_at_a_given_return_period():
     """ Test losses at given return periods """
-    oep_curve = ep_curve.EPCurve(DATA, ep_type=ep_curve.EPType.OEP)
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
     loss_10_year = oep_curve.loss_at_a_given_return_period(10)
     loss_100_year = oep_curve.loss_at_a_given_return_period(100)
     loss_1000_year = oep_curve.loss_at_a_given_return_period(1000)
     loss_1000000_year = oep_curve.loss_at_a_given_return_period(1000000)
     loss_800_year = oep_curve.loss_at_a_given_return_period(800)
-    assert oep_curve.get_ep_type() == ep_curve.EPType.OEP
+    assert oep_curve.get_ep_type() == EPType.OEP
     assert loss_10_year == 9000
     assert loss_100_year == 9900
     assert loss_1000_year == 9990
@@ -20,7 +21,7 @@ def test_loss_at_a_given_return_period():
 
 def test_tce_oep_at_a_given_return_period():
     """Test TCE loss at given return periods """
-    oep_curve = ep_curve.EPCurve(DATA, ep_type=ep_curve.EPType.OEP)
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
     loss_100_year = oep_curve.loss_at_a_given_return_period(100)
     tce_loss_100_year = oep_curve.tce_loss_at_a_given_return_period(100)
     assert loss_100_year == 9900
@@ -28,14 +29,30 @@ def test_tce_oep_at_a_given_return_period():
 
 def test_ep_curve_no_type_is_unknown():
     """ Test EP Curve is unknown when no type provided to init """
-    unknown_ep_curve = ep_curve.EPCurve(DATA)
-    assert unknown_ep_curve.get_ep_type() == ep_curve.EPType.UNKNOWN
+    unknown_ep_curve = EPCurve(DATA, EPType.UNKNOWN)
+    assert unknown_ep_curve.get_ep_type() == EPType.UNKNOWN
+
+def test_return_periods():
+    """ Test that return periods list exists and is not empty """
+    assert len(EPCurve.RETURN_PERIODS) > 0
+
+def test_get_loss_at_given_return_period_negative_rp_throws_value_error():
+    """Test that negative RP throws value error"""
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
+    with pytest.raises(ValueError):
+        oep_curve.loss_at_a_given_return_period(-1)
+
+def test_tce_loss_at_given_return_period_negative_rp_throws_value_error():
+    """Test that negative RP throws value error"""
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
+    with pytest.raises(ValueError):
+        oep_curve.tce_loss_at_a_given_return_period(-1)
 
 
 def test_get_standard_return_period_ep():
     """ Test get standard return period EP curve """
-    oep_curve = ep_curve.EPCurve(DATA, ep_type=ep_curve.EPType.OEP)
-    return_periods = ep_settings.RETURN_PERIODS
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
+    return_periods = EPCurve.RETURN_PERIODS
     standard_curve = oep_curve.get_standard_return_period_ep()
     test_ep_data = pd.DataFrame(DATA)
     for return_period in return_periods:
