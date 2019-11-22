@@ -2,11 +2,13 @@
 from enum import Enum
 import pandas as pd
 import numpy as np
-import plttools.ep_settings as ep_settings
 
 
 class EPCurve:
     """EP Curve"""
+
+    RETURN_PERIODS = [1, 2, 5, 10, 20, 25, 50,
+                      100, 150, 200, 250, 500, 1000, 10000]
 
     def __init__(self, data, ep_type=None):
         """ Type initialiser for EP Curve """
@@ -49,7 +51,7 @@ class EPCurve:
 
     def get_standard_return_period_ep(self):
         """ Calculates standard EP return periods and returns the overall curve """
-        return_periods = ep_settings.RETURN_PERIODS
+        return_periods = EPCurve.RETURN_PERIODS
         probabilities = list(map(lambda x: 1/x, return_periods))
         self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
             ascending=True).interpolate(method='index')
