@@ -1,6 +1,7 @@
 """ EP Curve tests"""
 # pylint: disable=too-many-lines
 import pandas as pd
+import pytest
 from plttools import EPCurve, EPType
 
 def test_loss_at_a_given_return_period():
@@ -28,12 +29,24 @@ def test_tce_oep_at_a_given_return_period():
 
 def test_ep_curve_no_type_is_unknown():
     """ Test EP Curve is unknown when no type provided to init """
-    unknown_ep_curve = EPCurve(DATA)
+    unknown_ep_curve = EPCurve(DATA, EPType.UNKNOWN)
     assert unknown_ep_curve.get_ep_type() == EPType.UNKNOWN
 
 def test_return_periods():
     """ Test that return periods list exists and is not empty """
     assert len(EPCurve.RETURN_PERIODS) > 0
+
+def test_get_loss_at_given_return_period_negative_rp_throws_value_error():
+    """Test that negative RP throws value error"""
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
+    with pytest.raises(ValueError):
+        oep_curve.loss_at_a_given_return_period(-1)
+
+def test_tce_loss_at_given_return_period_negative_rp_throws_value_error():
+    """Test that negative RP throws value error"""
+    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
+    with pytest.raises(ValueError):
+        oep_curve.tce_loss_at_a_given_return_period(-1)
 
 
 def test_get_standard_return_period_ep():
