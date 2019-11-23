@@ -16,6 +16,7 @@ class EPCurve:
 
     RETURN_PERIODS = [1, 2, 5, 10, 20, 25, 50,
                       100, 150, 200, 250, 500, 1000, 10000]
+    REQUIRED_COLUMNS = ["Probability", "Loss"]
 
     def __init__(self, data: list, ep_type: EPType):
         """ Type initialiser for EP Curve
@@ -34,7 +35,7 @@ class EPCurve:
         -------
         """
         curve_data = pd.DataFrame(data)
-        if "Probability" and "Loss" in list(curve_data.columns.values):
+        if all(column in list(curve_data.columns.values) for column in EPCurve.REQUIRED_COLUMNS):
             self.curve = curve_data
 
             max_loss_prob = [{"Probability": np.finfo(
