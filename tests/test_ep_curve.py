@@ -29,7 +29,7 @@ def test_tce_oep_at_a_given_return_period():
 
 def test_ep_curve_no_type_is_unknown():
     """ Test EP Curve is unknown when no type provided to init """
-    unknown_ep_curve = EPCurve(DATA, EPType.UNKNOWN)
+    unknown_ep_curve = EPCurve(DATA, None)
     assert unknown_ep_curve.get_ep_type() == EPType.UNKNOWN
 
 def test_return_periods():
@@ -48,6 +48,12 @@ def test_tce_loss_at_given_return_period_negative_rp_throws_value_error():
     with pytest.raises(ValueError):
         oep_curve.tce_loss_at_a_given_return_period(-1)
 
+def test_invalid_elt_data_throws_error():
+    """ Test invalid ELT input data throws ValueError """
+    invalid_ep_data = [{"probabilit":0.01, "los":100}, {"probabilit":0.02, "los":200}]
+    with pytest.raises(ValueError,
+                       match='Probability and Loss fields not in data. Check the spelling'):
+        EPCurve(invalid_ep_data, None)
 
 def test_get_standard_return_period_ep():
     """ Test get standard return period EP curve """
