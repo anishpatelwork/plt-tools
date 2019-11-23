@@ -19,6 +19,8 @@ def test_loss_at_a_given_return_period():
     assert loss_1000000_year == 9990
     assert loss_800_year == 9987.5
 
+# Testing github checks
+
 def test_tce_oep_at_a_given_return_period():
     """Test TCE loss at given return periods """
     oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
