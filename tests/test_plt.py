@@ -8,7 +8,6 @@ def test_get_aal():
     """ Test Get AAL from PLT """
     my_plt = plt.PLT(TEST_PLT, 5)
     assert my_plt.get_aal() == 900
-    assert my_plt.get_aal() == 900
 
 
 def test_get_standard_deviation():
