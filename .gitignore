@@ -5,3 +5,6 @@ htmlcov
 .DS_Store
 test-reports
 .coverage
+build
+dist
+plttools.egg-info
