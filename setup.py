@@ -7,12 +7,13 @@ README = (HERE/"README.md").read_text()
 
 setup(
     name="plttools",
-    version="0.1.0",
+    version="0.1.1",
     description="Interact with PLTs",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/anishpatelwork/plttools",
     author="Anish Patel",
     license="MIT",
-    packages=["plttools"]
+    packages=["plttools"],
+    install_requires=["pandas"]
 )
