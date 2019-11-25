@@ -62,12 +62,12 @@ def test_get_standard_return_period_ep():
     standard_curve = oep_curve.get_standard_return_period_ep()
     test_ep_data = pd.DataFrame(DATA)
     for return_period in return_periods:
-        prob = 1 / return_period
-        assert prob in standard_curve
+        probability = 1 / return_period
+        assert probability in standard_curve
         # Sometimes not all probabilities exist in the sample input data
-        if len(test_ep_data.loc[test_ep_data['Probability'] == prob]) > 0:
-            assert standard_curve[prob] == test_ep_data.loc[
-                test_ep_data['Probability'] == prob, 'Loss'].values[0]
+        if len(test_ep_data.loc[test_ep_data['Probability'] == probability]) > 0:
+            assert standard_curve[probability] == test_ep_data.loc[
+                test_ep_data['Probability'] == probability, 'Loss'].values[0]
 
 DATA = [
     {

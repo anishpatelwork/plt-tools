@@ -38,9 +38,9 @@ class EPCurve:
         if all(column in list(curve_data.columns.values) for column in EPCurve.REQUIRED_COLUMNS):
             self.curve = curve_data
 
-            max_loss_prob = [{"Probability": np.finfo(
+            max_loss_probability = [{"Probability": np.finfo(
                 float).tiny, "Loss": self.curve.max().Loss}]
-            self.curve = self.curve.append(pd.DataFrame(max_loss_prob))
+            self.curve = self.curve.append(pd.DataFrame(max_loss_probability))
             self.curve = self.curve.set_index('Probability')
 
             if ep_type is None:
@@ -72,8 +72,8 @@ class EPCurve:
         if probability in self.curve.index:
             loss = self.curve.loc[probability].Loss
         else:
-            prob_array = [probability]
-            self.curve = self.curve.reindex(self.curve.index.union(prob_array)).sort_index(
+            probability_array = [probability]
+            self.curve = self.curve.reindex(self.curve.index.union(probability_array)).sort_index(
                 ascending=True).interpolate(method='index')
             loss = self.curve.loc[probability].Loss
         return loss
@@ -81,7 +81,7 @@ class EPCurve:
     def tce_loss_at_a_given_return_period(self, return_period):
         """ Calculate TCE from EP curve at a given return period
         Methodology takes return period loss at the given return period and adds
-        the weighted average loss for return periods higher (probabilithy lower) than the
+        the weighted average loss for return periods higher (probability lower) than the
         given return period.
 
         Parameters
@@ -92,7 +92,7 @@ class EPCurve:
 
         Returns
         -------
-        type(float) Tail conditional expectated loss at given return period
+        type(float) Tail conditional expected loss at given return period
         """
 
         if return_period <= 0:

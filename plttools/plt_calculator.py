@@ -19,7 +19,7 @@ def calculate_oep_curve(plt, number_of_simulations):
     Returns
     -------
     EPCurve :
-        An exceedance probability curve for the occurrance of a single event in a given year
+        An exceedance probability curve for the occurrence of a single event in a given year
 
     """
     complete_plt = _fill_plt_empty_periods(plt, number_of_simulations)
