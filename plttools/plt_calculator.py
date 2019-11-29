@@ -4,7 +4,7 @@ A happy place for PLT calculator functions.
 
 import pandas as pd
 import numpy as np
-from plttools import ep_curve
+from plttools import ep_curve, PLT
 
 
 def calculate_oep_curve(plt, number_of_simulations):
@@ -24,10 +24,9 @@ def calculate_oep_curve(plt, number_of_simulations):
     """
     complete_plt = _fill_plt_empty_periods(plt, number_of_simulations)
     max_period_losses = complete_plt.groupby(
-        'periodId').max().fillna(0).sort_values(by=['loss'])
+        'PeriodId').max().fillna(0).sort_values(by=['Loss'])
     max_period_losses = _calculate_probabilities_for_period_losses(
         max_period_losses)
-    max_period_losses = max_period_losses.rename(columns={'loss': 'Loss'})
     return ep_curve.EPCurve(max_period_losses, ep_type=ep_curve.EPType.OEP)
 
 
@@ -48,10 +47,9 @@ def calculate_aep_curve(plt, number_of_simulations):
     """
     complete_plt = _fill_plt_empty_periods(plt, number_of_simulations)
     sum_period_losses = complete_plt.groupby(
-        'periodId').sum().fillna(0).sort_values(by=['loss'])
+        'PeriodId').sum().fillna(0).sort_values(by=['Loss'])
     sum_period_losses = _calculate_probabilities_for_period_losses(
         sum_period_losses)
-    sum_period_losses = sum_period_losses.rename(columns={'loss': 'Loss'})
     return ep_curve.EPCurve(sum_period_losses, ep_type=ep_curve.EPType.AEP)
 
 
@@ -68,11 +66,12 @@ def group_plts(plt1, plt2):
         A pandas dataframe containing a PLT
 
     """
-    grouped_plt = pd.concat([plt1, plt2], axis=0)
-    return grouped_plt.groupby(['periodId',
-                                'eventId',
-                                'eventDate',
-                                'lossDate'], observed=True).sum().reset_index()
+    grouped_plt = pd.concat([plt1.plt, plt2.plt], axis=0)
+    concatenated_plt = grouped_plt.groupby(['PeriodId',
+                                            'EventId',
+                                            'EventDate',
+                                            'LossDate'], observed=True).sum().reset_index()
+    return PLT(concatenated_plt)
 
 
 def _calculate_probabilities_for_period_losses(period_losses):
@@ -87,5 +86,5 @@ def _fill_plt_empty_periods(plt, number_of_simulations):
     plt_placeholder = []
     for period in range(1, number_of_simulations + 1):
         plt_placeholder.append(period)
-    placeholder = pd.DataFrame(plt_placeholder, columns=['periodId'])
-    return pd.merge(placeholder, plt, how='left', on=['periodId'])
+    placeholder = pd.DataFrame(plt_placeholder, columns=['PeriodId'])
+    return pd.merge(placeholder, plt, how='left', on=['PeriodId'])
