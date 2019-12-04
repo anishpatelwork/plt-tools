@@ -2,6 +2,8 @@ from plttools import PLT, plt_calculator, EPCurve
 
 
 class MarginalImpact:
+    """ Marginal Impact """
+
     def __init__(self, base_plt, submission_plt, number_of_simulations):
         self.base_plt = base_plt
         self.submission_plt = submission_plt
