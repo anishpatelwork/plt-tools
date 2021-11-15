@@ -53,7 +53,7 @@ def calculate_aep_curve(plt, number_of_simulations):
     return ep_curve.EPCurve(sum_period_losses, ep_type=ep_curve.EPType.AEP)
 
 
-def group_plts(plt1, plt2):
+def group_plts(plt1, plt2=None):
     """ This function groups two PLTs together
     Parameters
     ----------
@@ -66,12 +66,48 @@ def group_plts(plt1, plt2):
         A pandas dataframe containing a PLT
 
     """
-    grouped_plt = pd.concat([plt1.plt, plt2.plt], axis=0)
+    if plt2 is None:
+        grouped_plt = plt1.plt
+        num_simulations = plt1.simulations
+    elif plt1.simulations == plt2.simulations:
+        grouped_plt = pd.concat([plt1.plt, plt2.plt], axis=0)
+        num_simulations = plt1.simulations
+    else:
+        raise Exception('Please provide PLTs with the same number of simulations to be grouped.')
+
     concatenated_plt = grouped_plt.groupby(['PeriodId',
                                             'EventId',
                                             'EventDate',
-                                            'LossDate'], observed=True).sum().reset_index()
-    return PLT(concatenated_plt)
+                                            'LossDate',
+                                            'Weight'], observed=True).sum().reset_index()
+    return PLT(concatenated_plt, number_of_simulations=num_simulations)
+
+
+def roll_up_plts(plt1, plt2=None):
+    """ This function rolls up two or more PLTs together
+    Parameters
+    ----------
+    plt1 : pandas dataframe containing PLT
+    plt2 : pandas dataframe containing PLT
+
+    Returns
+    -------
+    plt :
+        A pandas dataframe containing a PLT
+
+    """
+    if plt2 is None:
+        grouped_plt = plt1.plt
+        num_simulations = plt1.simulations
+    elif plt1.simulations == plt2.simulations:
+        grouped_plt = pd.concat([plt1.plt, plt2.plt], axis=0)
+        num_simulations = plt1.simulations
+    else:
+        raise Exception('Please provide PLTs with the same number of simulations to be rolled up.')
+
+    concatenated_plt = grouped_plt.groupby(['PeriodId', 'Weight'], as_index=False).sum()
+
+    return PLT(concatenated_plt, number_of_simulations=num_simulations)
 
 
 def _calculate_probabilities_for_period_losses(period_losses):
