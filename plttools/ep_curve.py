@@ -14,8 +14,7 @@ class EPType(Enum):
 class EPCurve:
     """EP Curve"""
 
-    RETURN_PERIODS = [1, 2, 5, 10, 20, 25, 50,
-                      100, 150, 200, 250, 500, 1000, 10000]
+    RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 250, 500, 1000, 5000, 10000]
     REQUIRED_COLUMNS = ["Probability", "Loss"]
 
     def __init__(self, data: list, ep_type: EPType):
@@ -77,33 +76,6 @@ class EPCurve:
                 ascending=True).interpolate(method='index')
             loss = self.curve.loc[probability].Loss
         return loss
-
-    def tce_loss_at_a_given_return_period(self, return_period):
-        """ Calculate TCE from EP curve at a given return period
-        Methodology takes return period loss at the given return period and adds
-        the weighted average loss for return periods higher (probability lower) than the
-        given return period.
-
-        Parameters
-        ----------
-        return_period:
-            type(float)
-            Non-Negative number representing the return period (reciprocal of the probability)
-
-        Returns
-        -------
-        type(float) Tail conditional expected loss at given return period
-        """
-
-        if return_period <= 0:
-            raise ValueError(
-                "return_period: {0} supplied is not positive".format(return_period))
-
-        return_period_loss = self.loss_at_a_given_return_period(return_period)
-        probability = 1 / return_period
-        subset = self.curve[self.curve.index <= probability]
-        expected_loss_above_rpl = (subset.index * subset['Loss']).mean()
-        return return_period_loss + expected_loss_above_rpl
 
     def get_ep_type(self):
         """ Get the type of EP Curve

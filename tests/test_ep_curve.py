@@ -19,13 +19,6 @@ def test_loss_at_a_given_return_period():
     assert loss_1000000_year == 9990
     assert loss_800_year == 9987.5
 
-def test_tce_oep_at_a_given_return_period():
-    """Test TCE loss at given return periods """
-    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
-    loss_100_year = oep_curve.loss_at_a_given_return_period(100)
-    tce_loss_100_year = oep_curve.tce_loss_at_a_given_return_period(100)
-    assert loss_100_year == 9900
-    assert tce_loss_100_year == 9949.65
 
 def test_ep_curve_no_type_is_unknown():
     """ Test EP Curve is unknown when no type provided to init """
@@ -41,12 +34,6 @@ def test_get_loss_at_given_return_period_negative_rp_throws_value_error():
     oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
     with pytest.raises(ValueError):
         oep_curve.loss_at_a_given_return_period(-1)
-
-def test_tce_loss_at_given_return_period_negative_rp_throws_value_error():
-    """Test that negative RP throws value error"""
-    oep_curve = EPCurve(DATA, ep_type=EPType.OEP)
-    with pytest.raises(ValueError):
-        oep_curve.tce_loss_at_a_given_return_period(-1)
 
 def test_invalid_elt_data_throws_error():
     """ Test invalid ELT input data throws ValueError """
