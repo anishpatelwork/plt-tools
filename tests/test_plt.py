@@ -1,6 +1,6 @@
 """ Tests PLT """
 import pytest
-from plttools import PLT
+from aggregationtools import PLT
 
 
 def test_get_aal():
@@ -18,7 +18,7 @@ def test_no_simulations_set_sets_to_max_period():
 def test_get_standard_deviation():
     """ Test Get Standard Deviation from PLT """
     my_plt = PLT(DATA, 5)
-    assert my_plt.get_standard_deviation_risk_modeler() == pytest.approx(489.9, 0.1)
+    assert my_plt.get_standard_deviation() == pytest.approx(489.9, 0.1)
 
 
 def test_invalid_plt_columns_raises_value_error():
