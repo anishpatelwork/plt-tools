@@ -2,7 +2,8 @@
 # pylint: disable=too-many-lines
 import pandas as pd
 import pytest
-from plttools import EPCurve, EPType
+from aggregationtools import EPCurve, EPType
+
 
 def test_loss_at_a_given_return_period():
     """ Test losses at given return periods """
@@ -25,9 +26,11 @@ def test_ep_curve_no_type_is_unknown():
     unknown_ep_curve = EPCurve(DATA, None)
     assert unknown_ep_curve.get_ep_type() == EPType.UNKNOWN
 
+
 def test_return_periods():
     """ Test that return periods list exists and is not empty """
     assert len(EPCurve.RETURN_PERIODS) > 0
+
 
 def test_get_loss_at_given_return_period_negative_rp_throws_value_error():
     """Test that negative RP throws value error"""
@@ -35,12 +38,14 @@ def test_get_loss_at_given_return_period_negative_rp_throws_value_error():
     with pytest.raises(ValueError):
         oep_curve.loss_at_a_given_return_period(-1)
 
+
 def test_invalid_elt_data_throws_error():
     """ Test invalid ELT input data throws ValueError """
-    invalid_ep_data = [{"probabilit":0.01, "los":100}, {"probabilit":0.02, "los":200}]
+    invalid_ep_data = [{"probability":0.01, "los":100}, {"probability":0.02, "los":200}]
     with pytest.raises(ValueError,
                        match='Probability and Loss fields not in data. Check the spelling'):
         EPCurve(invalid_ep_data, None)
+
 
 def test_get_standard_return_period_ep():
     """ Test get standard return period EP curve """
@@ -51,7 +56,7 @@ def test_get_standard_return_period_ep():
     for return_period in return_periods:
         probability = 1 / return_period
         assert probability in standard_curve
-        # Sometimes not all probabilities exist in the sample input data
+        # Sometimes not all probabilities exist in the input data
         if len(test_ep_data.loc[test_ep_data['Probability'] == probability]) > 0:
             assert standard_curve[probability] == test_ep_data.loc[
                 test_ep_data['Probability'] == probability, 'Loss'].values[0]
