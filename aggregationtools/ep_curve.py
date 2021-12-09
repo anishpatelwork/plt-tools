@@ -14,7 +14,7 @@ class EPType(Enum):
 class EPCurve:
     """EP Curve"""
 
-    RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 250, 500, 1000, 5000, 10000]
+    RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 250, 500, 1000, 5000, 10000, 50000]
     REQUIRED_COLUMNS = ["Probability", "Loss"]
 
     def __init__(self, data: list, ep_type: EPType):
