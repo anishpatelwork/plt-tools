@@ -14,7 +14,7 @@ class EPType(Enum):
 class EPCurve:
     """EP Curve"""
 
-    RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 250, 500, 1000, 5000, 10000]
+    RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 250, 500, 1000, 5000, 10000, 50000]
     REQUIRED_COLUMNS = ["Probability", "Loss"]
 
     def __init__(self, data: list, ep_type: EPType):
@@ -102,6 +102,7 @@ class EPCurve:
         """
         return_periods = EPCurve.RETURN_PERIODS
         probabilities = list(map(lambda x: 1/x, return_periods))
+        self.curve = self.curve[~self.curve.index.duplicated(keep='first')]
         self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
             ascending=True).interpolate(method='index')
         return self.curve.to_dict()['Loss']
