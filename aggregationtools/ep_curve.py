@@ -102,6 +102,7 @@ class EPCurve:
         """
         return_periods = EPCurve.RETURN_PERIODS
         probabilities = list(map(lambda x: 1/x, return_periods))
+        self.curve = self.curve[~self.curve.index.duplicated(keep='first')]
         self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
             ascending=True).interpolate(method='index')
         return self.curve.to_dict()['Loss']

@@ -14,6 +14,7 @@ coverage = "*"
 pylint = "*"
 pep8 = "*"
 numpy = "*"
+scipy = "1.6.0"
 
 [requires]
 python_version = "3.8"

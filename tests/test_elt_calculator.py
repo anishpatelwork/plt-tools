@@ -55,18 +55,26 @@ def test_calculate_frequency_distribution():
 
 
 def test_calculate_severity_distribution():
-    severity_distribution, severity_density_function = elt_calculator.calculate_severity_distribution(ELT(TEST_ELT).elt)
+    severity_distribution, severity_density_function = elt_calculator.calculate_severity_distribution(
+        ELT(TEST_ELT).elt, grid_size=2**2, max_loss_factor=1)
     assert severity_distribution.iloc[1]['CEP'] == pytest.approx(0.73726, 0.00001)
     assert severity_density_function.iloc[0]['CEP'] == pytest.approx(0.26274, 0.0001)
 
 
 def test_calculate_oep_curve():
-    oep = elt_calculator.calculate_oep_curve(ELT(TEST_ELT).elt, grid_size = 2**2)
+    oep = elt_calculator.calculate_oep_curve(ELT(TEST_ELT).elt, grid_size=2**2, max_loss_factor=1)
     assert isinstance(oep, EPCurve)
     assert oep.get_ep_type() == EPType.OEP
     assert oep.loss_at_a_given_return_period(1/0.025307395866947635) == pytest.approx(10000000, 0.01)
     assert oep.loss_at_a_given_return_period(1/0.051289727305568245) == pytest.approx(5000000, 0.1)
     assert oep.loss_at_a_given_return_period(1/0.09516258196404048) == pytest.approx(0, 0.01)
+
+
+def test_calculate_aep_curve():
+    aep = elt_calculator.calculate_aep_curve(ELT(TEST_ELT).elt, grid_size=2**2, max_loss_factor=1)
+    assert isinstance(aep, EPCurve)
+    assert aep.get_ep_type() == EPType.AEP
+    assert aep.loss_at_a_given_return_period(1/0.02618) == pytest.approx(10000000, 0.01)
 
 
 DATA = [

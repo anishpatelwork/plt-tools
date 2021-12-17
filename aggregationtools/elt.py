@@ -38,7 +38,10 @@ class ELT:
             elt_data['mu'] = elt_data['Loss'] / elt_data['ExpValue']
             elt_data['sigma'] = elt_data['StandardDev'] / elt_data['ExpValue']
             elt_data['alpha'] = ((elt_data['mu'] ** 2 * (1 - elt_data['mu'])) / elt_data['sigma'] ** 2) - elt_data['mu']
+            elt_data['alpha'] = numpy.where(elt_data['alpha'] <= 0, 0.000001, elt_data['alpha'])
             elt_data['beta'] = (elt_data['alpha'] * (1 - elt_data['mu'])) / elt_data['mu']
+            elt_data['beta'] = numpy.where(elt_data['beta'] <= 0, 0.000001, elt_data['beta'])
+
             self.elt = elt_data
         else:
             raise ValueError(
