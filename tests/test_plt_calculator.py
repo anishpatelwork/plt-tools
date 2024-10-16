@@ -32,6 +32,9 @@ def test_calculate_oep_curve_sample_plt():
     assert oep.loss_at_a_given_return_period(200) == 514043110.58
     assert oep.loss_at_a_given_return_period(250) == 580645121.6999999
     assert oep.loss_at_a_given_return_period(500) == 832353773.07
+    # Need to recheck the values
+    # assert oep.loss_at_a_given_return_period(250) == 580645121.7
+    # assert oep.loss_at_a_given_return_period(500) == 832353773.0699999
 
 
 def test_calculate_aep_curve():

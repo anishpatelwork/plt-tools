@@ -64,7 +64,7 @@ def calculate_aep_curve(elt, grid_size=2**14, max_loss_factor=5):
         cdf1 = beta.cdf(row['xx'][:-1] - row['dx'] / 2, row['alpha'], row['beta'])
         row['FX2'] = np.insert(cdf2 - cdf1, 0, row['FX2'])
         fx2 = fx2 + (row['Rate'] / elt_lambda) * row['FX2']
-        elt.at[index] = row
+        elt[index] = row
 
     fx_hat = fft(fx2)
     fs_hat = numpy.exp(-elt_lambda*(1 - fx_hat))
