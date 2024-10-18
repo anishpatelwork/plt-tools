@@ -8,3 +8,4 @@ test-reports
 build
 dist
 plttools.egg-info
+.idea/workspace.xml

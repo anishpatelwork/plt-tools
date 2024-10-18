@@ -38,8 +38,8 @@ class EPCurve:
             self.curve = curve_data
 
             max_loss_probability = [{"Probability": np.finfo(
-                float).tiny, "Loss": self.curve.max().Loss}]
-            self.curve = self.curve.append(pd.DataFrame(max_loss_probability))
+                float).tiny, "Loss": self.curve.max(numeric_only=True).Loss}]
+            self.curve = pd.concat([self.curve, pd.DataFrame(max_loss_probability)], ignore_index=True)
             self.curve = self.curve.set_index('Probability')
 
             if ep_type is None:
