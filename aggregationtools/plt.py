@@ -25,14 +25,14 @@ class PLT:
 
     REQUIRED_COLUMNS = ["PeriodId", "Loss", "Weight"]
 
-    def __init__(self, data: list, number_of_simulations: int = None):
+    def __init__(self, data, number_of_simulations: int = None):
         """ Type initialiser for PLT
 
         Parameters
         ----------
         data:
-            type(list)
-            Contains a list of Period Losses [{"PeriodId": 1, "EventId":1,
+            type(any type that can be converted to a pandas DataFrame)
+            E.g. contains a list of Period Losses [{"PeriodId": 1, "EventId":1,
             "EventDate":8/25/2016 12:00:00 AM, "LossDate":"3/13/2016 12:00:00 AM", "Loss":1000}]
         number_of_simulations:
             type(int)
@@ -41,7 +41,7 @@ class PLT:
         Returns
         -------
         """
-        plt_data = pd.DataFrame(data)
+        plt_data = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
         if all(column in list(plt_data.columns.values) for column in PLT.REQUIRED_COLUMNS):
             self.plt = plt_data
             if number_of_simulations is None:
@@ -68,6 +68,21 @@ class PLT:
         total_annual_losses = annual_losses[['Loss']].sum()
         aal = total_annual_losses.Loss / self.simulations
         return aal
+
+    def get_variance(self):
+        """ Retrieves the Variance for the PLT
+            Parameters for RM
+            ----------
+
+            Returns
+            -------
+            float :
+                The variance of the PLT
+        """
+        weight = self.plt.loc[:, 'Weight'].mean()
+        annual_loss = self.plt[['PeriodId', 'Loss']].groupby('PeriodId').sum()
+        variance = ((1 / weight) / (1 / weight - 1)) * ((weight * (annual_loss ** 2).sum()) - self.get_aal() ** 2).Loss
+        return variance
 
     def get_standard_deviation(self):
         """ Retrieves the Standard Deviation for the losses of the annual losses for the PLT

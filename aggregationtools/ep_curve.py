@@ -9,6 +9,7 @@ class EPType(Enum):
     OEP = 1
     AEP = 2
     UNKNOWN = 3
+    TCE_OEP = 4
 
 
 class EPCurve:

@@ -30,6 +30,33 @@ def calculate_oep_curve(plt, number_of_simulations):
 
     return ep_curve.EPCurve(max_period_losses, ep_type=ep_curve.EPType.OEP)
 
+def calculate_tce_oep_curve(plt, number_of_simulations):
+    """ This function calculates the TCE-OEP curve of a given OEP
+    Parameters
+    ----------
+    plt : pandas dataframe containing PLT
+    number_of_simulations :
+        Number of simulation periods. Important to supply as cannot assume
+        that the max number of periods is the number of simulation
+
+    Returns
+    -------
+    EPCurve :
+        An exceedance probability curve for the occurrence of a single event in a given year
+
+    """
+    plt = _fill_plt_empty_periods(plt, number_of_simulations)
+    plt = plt.groupby('PeriodId').max().fillna(0).sort_values(by='Loss', ascending=False).reset_index(drop=True)
+    plt['row_number'] = plt.index.values + 1
+    plt['ep'] = plt['row_number'] / number_of_simulations
+
+    plt['delta'] = -((plt['Loss'] - plt['Loss'].shift(1)) / 2) * (plt['ep'] + plt['ep'].shift(1))
+    plt['delta'] = plt['delta'].fillna(0)
+    plt['tce_oep_interim'] = plt['delta'].cumsum()
+    plt['tce_oep'] = (plt['tce_oep_interim'] / plt['ep']) + plt['Loss']
+    tce_oep_loss = plt[['ep', 'tce_oep']].rename(columns={'ep': 'Probability', 'tce_oep': 'Loss'})
+
+    return ep_curve.EPCurve(tce_oep_loss.to_dict('records'), ep_type=ep_curve.EPType.TCE_OEP)
 
 def calculate_aep_curve(plt, number_of_simulations):
     """ This function calculates the AEP of a given PLT over a set number of simulations
