@@ -31,6 +31,27 @@ def calculate_oep_curve(elt, grid_size=2**14, max_loss_factor=5):
     return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
 
 
+def calculate_tce_oep_curve(oep):
+    """ This function calculates the TCE OEP of a given ELT
+    ----------
+    oep : OEP curve
+
+    Returns
+    -------
+    EPCurve :
+         exceedance probability curve
+
+    """
+    tce_oep = oep.curve.reset_index().rename(columns={'Probability': 'ep', 'Loss': 'oep_loss'}).sort_values(by='ep')
+    tce_oep['delta'] = -0.5 * (tce_oep['oep_loss'] - tce_oep['oep_loss'].shift(1)) * (tce_oep['ep'] + tce_oep['ep'].shift(1))
+    tce_oep['delta'] = tce_oep['delta'].fillna(0)
+    tce_oep['sigma_delta'] = tce_oep['delta'].cumsum()
+    tce_oep['loss'] = (tce_oep['sigma_delta'] / tce_oep['ep']) + tce_oep['oep_loss']
+    tce_oep = tce_oep[['ep', 'loss']].rename(columns={'ep': 'Probability', 'loss': 'Loss'})
+
+    return ep_curve.EPCurve(tce_oep, ep_type=ep_curve.EPType.TCE_OEP)
+
+
 def calculate_aep_curve(elt, grid_size=2**14, max_loss_factor=5):
     """ This function calculates the OEP of a given ELT
     ----------
