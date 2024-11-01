@@ -8,6 +8,7 @@ import numpy as np
 from scipy.fft import fft, ifft
 from scipy.stats import beta
 from aggregationtools import ELT, ep_curve
+import asyncio
 
 
 def calculate_oep_curve(elt, grid_size=2**14, max_loss_factor=5):
@@ -31,10 +32,10 @@ def calculate_oep_curve(elt, grid_size=2**14, max_loss_factor=5):
     return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
 
 
-def calculate_tce_oep_curve(oep):
+async def calculate_tce_oep_curve(oep):
     """ This function calculates the TCE OEP of a given ELT
     ----------
-    oep : OEP curve
+    oep : OEP curve, this is part of the new calculation provided by the functional team, the oep needs to be calculated using calculate_oep_curve_new function
 
     Returns
     -------
@@ -50,6 +51,106 @@ def calculate_tce_oep_curve(oep):
     tce_oep = tce_oep[['ep', 'loss']].rename(columns={'ep': 'Probability', 'loss': 'Loss'})
 
     return ep_curve.EPCurve(tce_oep, ep_type=ep_curve.EPType.TCE_OEP)
+
+async def calculate_oep_curve_new(elt):
+    """ This function calculates the OEP of a given ELT, this new calculation provided by the funtional team based on the Risk Modeler output
+    ----------
+    elt : pandas dataframe containing ELT
+
+    Returns
+    -------
+    EPCurve :
+         exceedance probability curve
+
+    """
+    elt_lambda = ELT(elt).get_lambda()
+    elt = elt.rename(columns={'Loss': 'Mean'}).sort_values(by='Mean', ascending=False)
+    elt['aal'] = elt['Mean'] * elt['Rate']
+    elt['wtd_mu'] = elt['aal'] * elt['mu']
+    elt['agg_var'] = elt['Rate'] * (elt['Mean'] ** 2 + elt['StandardDev'] ** 2)
+
+    elt['alpha'] = (1 - elt['mu']) / (elt['StandardDev'] / elt['Mean']) ** 2 - elt['mu']
+    elt['alpha'] = numpy.where(elt['alpha'] <= 0, 0.000001, elt['alpha'])
+
+
+    elt['alpha'] = np.where(elt['beta'] == 0.000001, np.where(elt['Mean'] / elt['ExpValue'] > 0.999999,
+                                          0.00999999, (elt['mu'] * elt['beta']) / (1 - elt['mu'])), elt['alpha'])
+
+    elt['sev_skew'] = (2 * (elt['beta'] - elt['alpha'])) / ((2 * elt['alpha']) + elt['beta']) * np.sqrt((elt['alpha'] + elt['beta'] + 1) / (elt['alpha'] * elt['beta']))
+    elt['agg_skew'] = elt['Rate'] * (((elt['StandardDev'] ** 3) * elt['sev_skew']) + (3 * elt['Mean'] * elt['StandardDev'] ** 2) + elt['Mean'] ** 3)
+
+    aal = elt['aal'].sum()
+    agg_var = elt['agg_var'].sum()
+    agg_cv = np.sqrt(agg_var) / aal
+    agg_skew = elt['agg_skew'].sum() / agg_var ** 1.5
+
+    wtd_mu = elt['wtd_mu'].sum()
+
+    if -10 ** -8 < agg_skew < 0:
+        agg_skew = -10 ** -8
+    elif 0 <= agg_skew < 10 ** -8:
+        agg_skew = 10 ** -8
+
+    positive_agg_skew = max(agg_skew, 10 ** -8)
+
+    oal = 0
+    task = [_calculate_mean_diff(e, elt) for e in range(len(elt) - 1)]
+    diff_means = await asyncio.gather(*task)
+    oal += sum(diff_means)
+    oal += elt.iloc[-1]['Mean'] * (1 - np.exp(-elt_lambda))
+
+    elt_oep = await _oep_calculation(elt, elt['ExpValue'].max())
+
+    rp_50k = np.interp(1 / 50000, elt_oep['oep'], elt_oep['perspvalue'])
+    rp_50k = max(rp_50k, 10e-6)
+    y_add = 0.324 * np.log(elt_lambda) + 20.494 * ((aal - oal) / rp_50k) + 1.922 * wtd_mu + 1.908 * np.log(agg_cv) - (0.430 / agg_skew) + 0.209
+    max_add = max(1.1, y_add)
+    y_mult = (elt_lambda ** - 0.057) * (((aal - oal) / rp_50k) ** 0.227) * (wtd_mu ** 0.135) * (agg_cv ** 0.149) * (positive_agg_skew ** 0.0158) * 12.126
+    max_mult = max(1.1, y_mult)
+
+    max_loss = min(max_add, max_mult) * rp_50k
+
+    oep_curve = await _oep_calculation(elt, max_loss)
+    oep = oep_curve[['oep', 'perspvalue']].rename(columns={'oep': 'Probability', 'perspvalue': 'Loss'})
+
+    return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
+
+async def _calculate_mean_diff(index, elt):
+    diff_mean = elt.iloc[index]['Mean'] - elt.iloc[index + 1]['Mean']
+    sum_rate = elt.iloc[:index + 1]['Rate'].sum()
+    return diff_mean * (1 - np.exp(-sum_rate))
+
+async def _oep_calculation(elt, max_loss):
+    """ This function calculates the OEP of a given ELT
+    ----------
+    elt : pandas dataframe containing ELT
+    max_loss : maximum loss
+
+    Returns
+    -------
+    out :
+        exceedance probability curve
+    """
+    thd = np.concatenate([np.linspace(0, max_loss * 1e-5, 1001)[:1000], np.linspace(max_loss * 1e-5, max_loss, 29000)])
+    thd = np.sort(thd)[::-1]
+
+    elt['alpha'] = ((elt['mu'] ** 2 * (1 - elt['mu'])) / elt['sigma'] ** 2) - elt['mu']
+    elt['alpha'][elt['alpha'] < 0] = 10e-6
+    elt['beta'] = ((1 - elt['mu']) * elt['alpha']) / elt['mu']
+    elt['beta'][elt['beta'] < 0] = 10e-6
+
+    thd_tasks = [_calculate_oep_for_each_thd(elt, thd) for thd in thd]
+    results = await asyncio.gather(*thd_tasks)
+    oep = pd.concat(results, ignore_index=True)
+    oep = oep.sort_values(by='perspvalue', ascending=False)
+    return oep
+
+
+async def _calculate_oep_for_each_thd(elt, thd):
+    x_subset = elt[elt['ExpValue'] >= thd]
+    temp = beta.cdf(thd/ x_subset['ExpValue'], x_subset['alpha'], x_subset['beta'])
+    oep_value = 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate']))
+    return pd.DataFrame([{'perspvalue': thd, 'oep': oep_value}])
 
 
 def calculate_aep_curve(elt, grid_size=2**14, max_loss_factor=5):

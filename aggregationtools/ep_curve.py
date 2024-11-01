@@ -104,6 +104,59 @@ class EPCurve:
         return_periods = EPCurve.RETURN_PERIODS
         probabilities = list(map(lambda x: 1/x, return_periods))
         self.curve = self.curve[~self.curve.index.duplicated(keep='first')]
-        self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
-            ascending=True).interpolate(method='index')
+        if self.ep_type == EPType.TCE_OEP or self.ep_type == EPType.OEP:
+            self.curve = self.curve.sort_index(ascending=True)
+        else:
+            self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
+                ascending=True).interpolate(method='index')
         return self.curve.to_dict()['Loss']
+
+    async def get_standard_return_period_ep_async(self):
+        """ Calculates standard EP return periods and returns the overall curve
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        type(dict) The following structure [{"Probability":0.01, "Loss":1000},
+        {"Probability":0.02, "Loss":2000}]
+        """
+        return_periods = EPCurve.RETURN_PERIODS
+        probabilities = list(map(lambda x: 1/x, return_periods))
+        self.curve = self.curve[~self.curve.index.duplicated(keep='first')]
+        if self.ep_type == EPType.TCE_OEP:
+            self.curve = self.curve.sort_index(ascending=True)
+        else:
+            self.curve = self.curve.reindex(self.curve.index.union(probabilities)).sort_index(
+                ascending=True).interpolate(method='index')
+        return self.curve.to_dict()['Loss']
+
+    async def loss_at_a_given_return_period_async(self, return_period: float):
+        """ Get a loss from EP curve
+
+        Parameters
+        ----------
+        return_period:
+            type(float)
+            Non-Negative number representing the return period (reciprocal of the probability)
+
+        Returns
+        -------
+        type(float) Return Period Loss
+        """
+        if return_period <= 0:
+            raise ValueError(
+                "return_period: {0} supplied is not positive".format(return_period))
+
+        probability = 1 / return_period
+        if probability in self.curve.index:
+            loss = self.curve.loc[probability].Loss
+        elif probability > self.curve.index.max():
+            loss = None if self.ep_type == EPType.TCE_OEP else 0
+        else:
+            probability_array = [probability]
+            self.curve = self.curve.reindex(self.curve.index.union(probability_array)).sort_index(
+                ascending=True).interpolate(method='index')
+            loss = self.curve.loc[probability].Loss
+        return loss
