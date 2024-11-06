@@ -32,7 +32,7 @@ def calculate_oep_curve(elt, grid_size=2**14, max_loss_factor=5):
     return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
 
 
-async def calculate_tce_oep_curve(oep):
+def calculate_tce_oep_curve(oep):
     """ This function calculates the TCE OEP of a given ELT
     ----------
     oep : OEP curve, this is part of the new calculation provided by the functional team, the oep needs to be calculated using calculate_oep_curve_new function
@@ -52,7 +52,7 @@ async def calculate_tce_oep_curve(oep):
 
     return ep_curve.EPCurve(tce_oep, ep_type=ep_curve.EPType.TCE_OEP)
 
-async def calculate_oep_curve_new(elt):
+def calculate_oep_curve_new(elt):
     """ This function calculates the OEP of a given ELT, this new calculation provided by the funtional team based on the Risk Modeler output
     ----------
     elt : pandas dataframe containing ELT
@@ -94,12 +94,11 @@ async def calculate_oep_curve_new(elt):
     positive_agg_skew = max(agg_skew, 10 ** -8)
 
     oal = 0
-    task = [_calculate_mean_diff(e, elt) for e in range(len(elt) - 1)]
-    diff_means = await asyncio.gather(*task)
+    diff_means = [_calculate_mean_diff(e, elt) for e in range(len(elt) - 1)]
     oal += sum(diff_means)
     oal += elt.iloc[-1]['Mean'] * (1 - np.exp(-elt_lambda))
 
-    elt_oep = await _oep_calculation(elt, elt['ExpValue'].max())
+    elt_oep = _oep_calculation(elt, elt['ExpValue'].max())
 
     rp_50k = np.interp(1 / 50000, elt_oep['oep'], elt_oep['perspvalue'])
     rp_50k = max(rp_50k, 10e-6)
@@ -110,17 +109,17 @@ async def calculate_oep_curve_new(elt):
 
     max_loss = min(max_add, max_mult) * rp_50k
 
-    oep_curve = await _oep_calculation(elt, max_loss)
+    oep_curve = _oep_calculation(elt, max_loss)
     oep = oep_curve[['oep', 'perspvalue']].rename(columns={'oep': 'Probability', 'perspvalue': 'Loss'})
 
     return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
 
-async def _calculate_mean_diff(index, elt):
+def _calculate_mean_diff(index, elt):
     diff_mean = elt.iloc[index]['Mean'] - elt.iloc[index + 1]['Mean']
     sum_rate = elt.iloc[:index + 1]['Rate'].sum()
     return diff_mean * (1 - np.exp(-sum_rate))
 
-async def _oep_calculation(elt, max_loss):
+def _oep_calculation(elt, max_loss):
     """ This function calculates the OEP of a given ELT
     ----------
     elt : pandas dataframe containing ELT
@@ -135,23 +134,18 @@ async def _oep_calculation(elt, max_loss):
     thd = np.sort(thd)[::-1]
 
     elt['alpha'] = ((elt['mu'] ** 2 * (1 - elt['mu'])) / elt['sigma'] ** 2) - elt['mu']
-    elt['alpha'][elt['alpha'] < 0] = 10e-6
+    elt.loc[elt['alpha'] < 0, 'alpha'] = 10e-6
     elt['beta'] = ((1 - elt['mu']) * elt['alpha']) / elt['mu']
-    elt['beta'][elt['beta'] < 0] = 10e-6
-
-    thd_tasks = [_calculate_oep_for_each_thd(elt, thd) for thd in thd]
-    results = await asyncio.gather(*thd_tasks)
-    oep = pd.concat(results, ignore_index=True)
+    elt.loc[elt['beta'] < 0, 'beta'] = 10e-6
+    oep = pd.DataFrame()
+    for thd in thd:
+        x_subset = elt[elt['ExpValue'] >= thd]
+        temp = beta.cdf(thd / x_subset['ExpValue'], x_subset['alpha'], x_subset['beta'])
+        oep_value = 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate']))
+        oep = pd.concat([oep, pd.DataFrame([{'perspvalue': thd, 'oep': oep_value}])], ignore_index=True)
+    
     oep = oep.sort_values(by='perspvalue', ascending=False)
     return oep
-
-
-async def _calculate_oep_for_each_thd(elt, thd):
-    x_subset = elt[elt['ExpValue'] >= thd]
-    temp = beta.cdf(thd/ x_subset['ExpValue'], x_subset['alpha'], x_subset['beta'])
-    oep_value = 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate']))
-    return pd.DataFrame([{'perspvalue': thd, 'oep': oep_value}])
-
 
 def calculate_aep_curve(elt, grid_size=2**14, max_loss_factor=5):
     """ This function calculates the OEP of a given ELT

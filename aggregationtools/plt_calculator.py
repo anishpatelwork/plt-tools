@@ -31,7 +31,7 @@ def calculate_oep_curve(plt, number_of_simulations):
     return ep_curve.EPCurve(max_period_losses, ep_type=ep_curve.EPType.OEP)
 
 
-async def calculate_oep_curve_async(plt, number_of_simulations):
+def calculate_oep_curve_new(plt, number_of_simulations):
     """ This function calculates the OEP of a given PLT over a set number of simulations
     Parameters
     ----------
@@ -53,7 +53,7 @@ async def calculate_oep_curve_async(plt, number_of_simulations):
 
     return ep_curve.EPCurve(oep_loss, ep_type=ep_curve.EPType.OEP)
 
-async def calculate_tce_oep_curve_async(plt, number_of_simulations):
+def calculate_tce_oep_curve(plt, number_of_simulations):
     """ This function calculates the TCE-OEP curve of a given OEP
     Parameters
     ----------
