@@ -137,13 +137,11 @@ def _oep_calculation(elt, max_loss):
     elt.loc[elt['alpha'] < 0, 'alpha'] = 10e-6
     elt['beta'] = ((1 - elt['mu']) * elt['alpha']) / elt['mu']
     elt.loc[elt['beta'] < 0, 'beta'] = 10e-6
-    oep = pd.DataFrame()
-    for thd in thd:
-        x_subset = elt[elt['ExpValue'] >= thd]
-        temp = beta.cdf(thd / x_subset['ExpValue'], x_subset['alpha'], x_subset['beta'])
-        oep_value = 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate']))
-        oep = pd.concat([oep, pd.DataFrame([{'perspvalue': thd, 'oep': oep_value}])], ignore_index=True)
-    
+
+    x_subset = elt[elt['ExpValue'] >= thd.min()]
+    temp = beta.cdf(thd[:, None] / x_subset['ExpValue'].values, x_subset['alpha'].values, x_subset['beta'].values)
+    oep_value = 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate'].values, axis=1))
+    oep = pd.DataFrame({'perspvalue': thd, 'oep': oep_value})
     oep = oep.sort_values(by='perspvalue', ascending=False)
     return oep
 
