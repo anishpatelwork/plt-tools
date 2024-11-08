@@ -8,7 +8,6 @@ import numpy as np
 from scipy.fft import fft, ifft
 from scipy.stats import beta
 from aggregationtools import ELT, ep_curve
-import asyncio
 
 
 def calculate_oep_curve(elt, grid_size=2**14, max_loss_factor=5):
@@ -72,7 +71,6 @@ def calculate_oep_curve_new(elt):
     elt['alpha'] = (1 - elt['mu']) / (elt['StandardDev'] / elt['Mean']) ** 2 - elt['mu']
     elt['alpha'] = numpy.where(elt['alpha'] <= 0, 0.000001, elt['alpha'])
 
-
     elt['alpha'] = np.where(elt['beta'] == 0.000001, np.where(elt['Mean'] / elt['ExpValue'] > 0.999999,
                                           0.00999999, (elt['mu'] * elt['beta']) / (1 - elt['mu'])), elt['alpha'])
 
@@ -97,7 +95,6 @@ def calculate_oep_curve_new(elt):
     diff_means = [_calculate_mean_diff(e, elt) for e in range(len(elt) - 1)]
     oal += sum(diff_means)
     oal += elt.iloc[-1]['Mean'] * (1 - np.exp(-elt_lambda))
-
     elt_oep = _oep_calculation(elt, elt['ExpValue'].max())
 
     rp_50k = np.interp(1 / 50000, elt_oep['oep'], elt_oep['perspvalue'])
@@ -108,10 +105,8 @@ def calculate_oep_curve_new(elt):
     max_mult = max(1.1, y_mult)
 
     max_loss = min(max_add, max_mult) * rp_50k
-
     oep_curve = _oep_calculation(elt, max_loss)
     oep = oep_curve[['oep', 'perspvalue']].rename(columns={'oep': 'Probability', 'perspvalue': 'Loss'})
-
     return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
 
 def _calculate_mean_diff(index, elt):
@@ -130,6 +125,7 @@ def _oep_calculation(elt, max_loss):
     out :
         exceedance probability curve
     """
+
     thd = np.concatenate([np.linspace(0, max_loss * 1e-5, 1001)[:1000], np.linspace(max_loss * 1e-5, max_loss, 29000)])
     thd = np.sort(thd)[::-1]
 
@@ -139,8 +135,20 @@ def _oep_calculation(elt, max_loss):
     elt.loc[elt['beta'] < 0, 'beta'] = 10e-6
 
     x_subset = elt[elt['ExpValue'] >= thd.min()]
-    temp = beta.cdf(thd[:, None] / x_subset['ExpValue'].values, x_subset['alpha'].values, x_subset['beta'].values)
-    oep_value = 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate'].values, axis=1))
+
+    chunk_size = 1000
+    results = []
+    x_subset_exp_value = x_subset['ExpValue'].values
+    x_subset_alpha = x_subset['alpha'].values
+    x_subset_beta = x_subset['beta'].values
+    x_subset_rate = x_subset['Rate'].values
+    for start in range(0, thd.shape[0], chunk_size):
+        end = start + chunk_size
+        thd_chunk = thd[start:end]
+        temp_chunk = beta.cdf(thd_chunk[:, None] / x_subset_exp_value, x_subset_alpha, x_subset_beta)
+        oep_value_chunk = 1 - np.exp(-np.sum((1 - temp_chunk) * x_subset_rate, axis=1))
+        results.append(oep_value_chunk)
+    oep_value = np.concatenate(results, axis=0)
     oep = pd.DataFrame({'perspvalue': thd, 'oep': oep_value})
     oep = oep.sort_values(by='perspvalue', ascending=False)
     return oep
