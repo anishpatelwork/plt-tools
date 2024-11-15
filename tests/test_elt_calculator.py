@@ -69,6 +69,25 @@ def test_calculate_oep_curve():
     assert oep.loss_at_a_given_return_period(1/0.051289727305568245) == pytest.approx(5000000, 0.1)
     assert oep.loss_at_a_given_return_period(1/0.09516258196404048) == pytest.approx(0, 0.01)
 
+def test_calculate_oep_curve_new():
+    oep = elt_calculator.calculate_oep_curve_new(ELT(TEST_ELT).elt)
+    assert isinstance(oep, EPCurve)
+    assert oep.get_ep_type() == EPType.OEP
+    oep.get_standard_return_period_ep()
+    assert oep.loss_at_a_given_return_period(1/0.025307395866947635) == pytest.approx(10000000, 0.01)
+    assert oep.loss_at_a_given_return_period(1/0.051289727305568245) == pytest.approx(5000000, 0.1)
+    assert oep.loss_at_a_given_return_period(1/0.09516258196404048) == pytest.approx(0, 0.01)
+
+def test_calculate_tce_oep_curve():
+    oep = elt_calculator.calculate_oep_curve_new(ELT(TEST_ELT).elt)
+    tce_oep = elt_calculator.calculate_tce_oep_curve(oep)
+    assert isinstance(oep, EPCurve)
+    assert tce_oep.get_ep_type() == EPType.TCE_OEP
+    tce_oep.get_standard_return_period_ep()
+    assert tce_oep.loss_at_a_given_return_period(10) == pytest.approx(7313642.95, 0.01)
+    assert tce_oep.loss_at_a_given_return_period(100) == pytest.approx(21011008.93, 0.1)
+    assert tce_oep.loss_at_a_given_return_period(1000) == pytest.approx(32066093.22, 0.01)
+
 
 def test_calculate_aep_curve():
     aep = elt_calculator.calculate_aep_curve(ELT(TEST_ELT).elt, grid_size=2**2, max_loss_factor=1)
