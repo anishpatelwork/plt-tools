@@ -124,9 +124,9 @@ def _oep_calculation(elt_data, max_loss):
     thd = np.concatenate([np.linspace(0, max_loss * 1e-5, 1001)[:1000], np.linspace(max_loss * 1e-5, max_loss, 29000)])
     thd = np.sort(thd)[::-1]
 
-    elt_data['alpha'] = ((elt_data['mu'] ** 2 * (1 - elt_data['mu'])) / elt_data['sigma'] ** 2) - elt_data['mu']
+    elt_data.loc[:, elt_data['alpha']] = ((elt_data['mu'] ** 2 * (1 - elt_data['mu'])) / elt_data['sigma'] ** 2) - elt_data['mu']
     elt_data.loc[elt_data['alpha'] < 0, 'alpha'] = 10e-6
-    elt_data['beta'] = ((1 - elt_data['mu']) * elt_data['alpha']) / elt_data['mu']
+    elt_data.loc[:, elt_data['beta']] = ((1 - elt_data['mu']) * elt_data['alpha']) / elt_data['mu']
     elt_data.loc[elt_data['beta'] < 0, 'beta'] = 10e-6
 
     chunk_size = 1000
