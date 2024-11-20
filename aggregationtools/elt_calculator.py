@@ -145,6 +145,7 @@ def _oep_calculation(elt_data, max_loss):
 
 def _calculate_oep_chunk(thd_chunk, x_subset_exp_value, x_subset_alpha, x_subset_beta, x_subset_rate):
     temp_chunk = beta.cdf(thd_chunk[:, None] / x_subset_exp_value, x_subset_alpha, x_subset_beta)
+    temp_chunk[np.isnan(temp_chunk)] = 0
     oep_value_chunk = 1 - np.exp(-np.sum((1 - temp_chunk) * x_subset_rate, axis=1))
     return oep_value_chunk
 
