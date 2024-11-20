@@ -5,8 +5,6 @@ import numpy
 import math
 import pandas as pd
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
-
 from scipy.fft import fft, ifft
 from scipy.stats import beta
 from aggregationtools import ELT, ep_curve
@@ -129,15 +127,15 @@ def _oep_calculation(elt_data, max_loss):
     elt_data.loc[:, ['beta']] = ((1 - elt_data['mu']) * elt_data['alpha']) / elt_data['mu']
     elt_data.loc[elt_data['beta'] < 0, 'beta'] = 10e-6
 
-    chunk_size = 200
-    with ThreadPoolExecutor() as executor:
-        futures = []
-        for start in range(0, thd.shape[0], chunk_size):
-            end = start + chunk_size
-            thd_chunk = thd[start:end]
-            x_subset = elt_data[elt_data['ExpValue'] >= thd_chunk.min()]
-            futures.append(executor.submit(_calculate_oep_chunk, thd_chunk, x_subset['ExpValue'].values, x_subset['alpha'].values, x_subset['beta'].values, x_subset['Rate'].values))
-        results = [future.result() for future in futures]
+    chunk_size = 1000
+    results = []
+    for start in range(0, thd.shape[0], chunk_size):
+        end = start + chunk_size
+        thd_chunk = thd[start:end]
+        x_subset = elt_data[elt_data['ExpValue'] >= thd_chunk.min()]
+        result = _calculate_oep_chunk(thd_chunk, x_subset['ExpValue'].values, x_subset['alpha'].values, x_subset['beta'].values, x_subset['Rate'].values)
+        results.append(result)
+
     oep_value = np.concatenate(results, axis=0)
     oep = pd.DataFrame({'perspvalue': thd, 'oep': oep_value})
     oep = oep.sort_values(by='perspvalue', ascending=False)
