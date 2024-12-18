@@ -53,6 +53,7 @@ def calculate_oep_curve_new(plt, number_of_simulations):
 
     return ep_curve.EPCurve(oep_loss, ep_type=ep_curve.EPType.OEP)
 
+
 def calculate_tce_oep_curve(plt, number_of_simulations):
     """ This function calculates the TCE-OEP curve of a given OEP
     Parameters
@@ -72,13 +73,14 @@ def calculate_tce_oep_curve(plt, number_of_simulations):
     plt['row_number'] = plt.index.values + 1
     plt['ep'] = plt['row_number'] / number_of_simulations
 
-    plt['delta'] = -((plt['Loss'] - plt['Loss'].shift(1)) / 2) * (plt['ep'] + plt['ep'].shift(1))
-    plt['delta'] = plt['delta'].fillna(0)
-    plt['tce_oep_interim'] = plt['delta'].cumsum()
-    plt['tce_oep'] = (plt['tce_oep_interim'] / plt['ep']) + plt['Loss']
+    plt['tce_oep'] = (plt['Loss'] + (1/plt['ep']) *
+                      (0.5 * ((plt['Loss'].shift(1)-plt['Loss']).fillna(0)) * ((plt['ep'] + plt['ep'].shift(1)).fillna(0))
+                    + (0.5 * (plt['Loss'] - plt['Loss'].shift(-1)) * (plt['ep'] + plt['ep'].shift(-1))).cumsum().shift(2,fill_value=0)))
+
     tce_oep_loss = plt[['ep', 'tce_oep']].rename(columns={'ep': 'Probability', 'tce_oep': 'Loss'})
 
     return ep_curve.EPCurve(tce_oep_loss.to_dict('records'), ep_type=ep_curve.EPType.TCE_OEP)
+
 
 def calculate_aep_curve(plt, number_of_simulations):
     """ This function calculates the AEP of a given PLT over a set number of simulations

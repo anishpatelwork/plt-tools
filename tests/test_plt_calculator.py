@@ -115,6 +115,13 @@ def test_roll_up_plts():
 
     assert rolled_up_plt.loc[rolled_up_plt['PeriodId'] == 1].Loss.sum() == 404
 
+def test_plt_calculator_calculate_tce_oep_curve():
+    tce_oep = plt_calculator.calculate_tce_oep_curve(TEST_PLT,5)
+    assert isinstance(tce_oep, EPCurve)
+    assert tce_oep.get_ep_type() == EPType.TCE_OEP
+    assert tce_oep.loss_at_a_given_return_period(5) == 900.00
+    assert tce_oep.loss_at_a_given_return_period(1.25) == 625.00
+
 
 DATA = [
     {
