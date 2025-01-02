@@ -69,6 +69,7 @@ def calculate_tce_oep_curve(plt, number_of_simulations):
         An exceedance probability curve for the occurrence of a single event in a given year
 
     """
+    plt = plt[['PeriodId', 'Loss']]
     plt = _fill_plt_empty_periods(plt, number_of_simulations)
     plt['Loss'] = plt['Loss'].fillna(0)
     plt = plt.groupby('PeriodId').max().sort_values(by='Loss', ascending=False).reset_index(drop=True)
