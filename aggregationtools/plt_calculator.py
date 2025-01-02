@@ -22,6 +22,7 @@ def calculate_oep_curve(plt, number_of_simulations):
         An exceedance probability curve for the occurrence of a single event in a given year
 
     """
+    plt = plt[['PeriodId', 'Loss']]
     complete_plt = _fill_plt_empty_periods(plt, number_of_simulations)
     max_period_losses = complete_plt.groupby(
         'PeriodId').max().fillna(0).sort_values(by=['Loss'])
@@ -46,6 +47,7 @@ def calculate_oep_curve_new(plt, number_of_simulations):
         An exceedance probability curve for the occurrence of a single event in a given year
 
     """
+    plt = plt[['PeriodId', 'Loss']]
     plt = plt.groupby('PeriodId').max().sort_values(by='Loss', ascending=False).reset_index(drop=True)
     plt['row_number'] = plt.index.values + 1
     plt['ep'] = plt['row_number'] / number_of_simulations
@@ -100,6 +102,7 @@ def calculate_aep_curve(plt, number_of_simulations):
         An exceedance probability curve for the aggregate losses in a given year
 
     """
+    plt = plt[['PeriodId', 'Loss']]
     complete_plt = _fill_plt_empty_periods(plt, number_of_simulations)
     sum_period_losses = complete_plt.groupby(
         'PeriodId').sum().fillna(0).sort_values(by=['Loss'])
