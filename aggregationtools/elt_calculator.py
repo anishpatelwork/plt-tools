@@ -99,7 +99,6 @@ def calculate_oep_curve_new(elt):
     oal = sum(diff_means * (1 - np.exp(-sum_rates))) + elt.iloc[-1]['Mean'] * (1 - np.exp(-elt_lambda))
     elt_data = elt[["mu", "sigma", "ExpValue", "Rate"]]
     elt_oep = _oep_calculation(elt_data, elt['ExpValue'].max())
-    elt_oep = elt_oep.drop(elt_oep.loc[elt_oep['oep'] < 10e-10].index)
 
     rp_50k = np.interp(1 / 50000, elt_oep['oep'], elt_oep['perspvalue'])
     rp_50k = max(rp_50k, 10e-6)
@@ -111,7 +110,7 @@ def calculate_oep_curve_new(elt):
     max_loss = min(max_add, max_mult) * rp_50k
     oep_curve = _oep_calculation(elt_data, max_loss)
     oep = oep_curve[['oep', 'perspvalue']].rename(columns={'oep': 'Probability', 'perspvalue': 'Loss'})
-    oep = oep.drop(oep.loc[oep['Probability'] < 10e-10].index)
+    oep = oep.drop(oep.loc[oep['Probability'] < 1e-10].index)
     return ep_curve.EPCurve(oep, ep_type=ep_curve.EPType.OEP)
 
 def _oep_calculation(elt_data, max_loss):
