@@ -136,6 +136,7 @@ def _oep_calculation(elt_data, max_loss):
     def _calculate_oep_parallel(thd_i):
         x_subset = elt_data[elt_data['ExpValue'] >= thd[thd_i]]
         temp = beta.cdf(thd[thd_i] / x_subset['ExpValue'], x_subset['alpha'], x_subset['beta'])
+        temp[np.isnan(temp)] = 0
         return 1 - np.exp(-np.sum((1 - temp) * x_subset['Rate'], axis=0))
     with ThreadPoolExecutor() as executor:
         results = list(executor.map(_calculate_oep_parallel, range(thd.shape[0])))
